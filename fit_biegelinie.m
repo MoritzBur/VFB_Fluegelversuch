@@ -1,7 +1,17 @@
 % fit_biegelinie.m
-function fit_biegelinie(inputFiles)
-    % Erwartet inputFiles als Zell-Array mit Dateipfaden
+function fit_biegelinie(inputFiles, outputFiles)
+    % Erwartet inputFiles als Zell-Array mit Dateipfaden und outputFiles für Speicherung der Fit-Daten
     
+    % Standardmäßig outputFiles auf leere Zellen setzen, falls nicht angegeben
+    if nargin < 2
+        outputFiles = strcat(inputFiles, '-fit.mat'); % Generiert Standardnamen, falls nicht explizit übergeben
+    end
+    
+    % Prüfen, ob Anzahl der Eingabe- und Ausgabedateien übereinstimmt
+    if length(inputFiles) ~= length(outputFiles)
+        error('Die Anzahl der Eingabedateien muss der Anzahl der Ausgabedateien entsprechen.');
+    end
+
     % Laden der Sensor-Koordinaten für Vorder- und Hinterkante
     load('V_sensors.mat', 'V_sensors');
     load('H_sensors.mat', 'H_sensors');
@@ -12,6 +22,7 @@ function fit_biegelinie(inputFiles)
     
     for fileIdx = 1:length(inputFiles)
         inputFile = inputFiles{fileIdx};
+        outputFile = outputFiles{fileIdx};
 
         % Laden der gefilterten Daten
         load(inputFile, 'filteredData', 'Head');
@@ -84,5 +95,8 @@ function fit_biegelinie(inputFiles)
         ylabel('Linearkoeffizient');
         legend;
         grid on;
+
+        % Speichern der Fit-Daten
+        save(outputFile, 'vFits', 'hFits', 'vCoeffs', 'hCoeffs', 'polyV', 'polyH', 'V_x', 'H_x');
     end
 end
