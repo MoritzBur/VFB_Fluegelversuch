@@ -47,18 +47,20 @@ function transform_data(inputFiles, outputFiles)
         mw900 = Data(:, mw900Index); % Verschiebung an der Drehachse
         m0 = Data(:, m0Index);        % Verschiebungspunkt M0
 
-        % Schritt 1: Korrektur der Verschiebungen um M0
+        % Schritt 1: Umkehr der Korrektur der Verschiebungen um M0
+        % Addiere die Verschiebung M0 zu allen relevanten Messkanälen (V0-V9 und H0-H9)
         correctedDataHeight = Data;
         correctedDataHeight(:, [vIndices, hIndices]) = correctedDataHeight(:, [vIndices, hIndices]) + m0;
 
-        % Schritt 2: Winkelkorrektur durch Anwendung des Strahlensatzes
+        % Schritt 2: Umkehr der Winkelkorrektur durch Anwendung des Strahlensatzes
+        % Bestimmung des Höhenunterschieds zwischen MW900 und M0
         heightDifference = mw900 - m0;
         leverArm = 900; % Hebelarm in mm
 
         % Winkelberechnung (kleine Winkel angenommen, daher tan(theta) ~ theta)
         theta = heightDifference / leverArm; % in rad, Annahme: kleine Winkel
 
-        % Korrigierte Daten nach Winkelkorrektur
+        % Korrigierte Daten nach Umkehr der Winkelkorrektur
         correctedDataAngle = correctedDataHeight;
         % Vorderkante
         for i = 1:length(vIndices)
@@ -77,73 +79,28 @@ function transform_data(inputFiles, outputFiles)
         % Nur den Dateinamen und die Erweiterung für den Plot-Titel anzeigen
         [~, fileName, ext] = fileparts(inputFile);
 
-        % Plot der Rohdaten und schrittweisen Korrekturen
-        figure;
-        % Plot der Rohdaten für die Vorderkante
-        subplot(3, 2, 1);
-        plot(Data(:, vIndices));
-        title(['Vorderkante - Rohdaten - Datei: ', fileName, ext]);
-        xlabel('Zeitindex');
-        ylabel('Verformung (mm)');
-
-        % Plot der Rohdaten für die Hinterkante
-        subplot(3, 2, 2);
-        plot(Data(:, hIndices));
-        title(['Hinterkante - Rohdaten - Datei: ', fileName, ext]);
-        xlabel('Zeitindex');
-        ylabel('Verformung (mm)');
-
-        % Plot der höhenkorrigierten Daten für die Vorderkante
-        subplot(3, 2, 3);
-        plot(correctedDataHeight(:, vIndices));
-        title(['Vorderkante - Höhenkorrigiert - Datei: ', fileName, ext]);
-        xlabel('Zeitindex');
-        ylabel('Verformung (mm)');
-
-        % Plot der höhenkorrigierten Daten für die Hinterkante
-        subplot(3, 2, 4);
-        plot(correctedDataHeight(:, hIndices));
-        title(['Hinterkante - Höhenkorrigiert - Datei: ', fileName, ext]);
-        xlabel('Zeitindex');
-        ylabel('Verformung (mm)');
-
-        % Plot der winkelkorrigierten Daten für die Vorderkante
-        subplot(3, 2, 5);
-        plot(correctedDataAngle(:, vIndices));
-        title(['Vorderkante - Winkelkorrigiert - Datei: ', fileName, ext]);
-        xlabel('Zeitindex');
-        ylabel('Verformung (mm)');
-
-        % Plot der winkelkorrigierten Daten für die Hinterkante
-        subplot(3, 2, 6);
-        plot(correctedDataAngle(:, hIndices));
-        title(['Hinterkante - Winkelkorrigiert - Datei: ', fileName, ext]);
-        xlabel('Zeitindex');
-        ylabel('Verformung (mm)');
-
         % Interaktiver Plot der Biegelinie entlang der Spannweite
-        figure('Name', ['Biegelinie - Datei: ', fileName, ext]);
-        set(gcf, 'Position', [100, 100, 800, 600]); % Fenstergröße festlegen
-        bendPlot = subplot(1, 1, 1);
-        timeStepSlider = uicontrol('Style', 'slider', 'Position', [100, 20, 600, 20], 'Min', 1, 'Max', size(Data, 1), 'Value', 1, 'SliderStep', [1/(size(Data, 1)-1), 10/(size(Data, 1)-1)]);
-        addlistener(timeStepSlider, 'Value', 'PostSet', @(src, event) updateBendPlot(bendPlot, round(timeStepSlider.Value), V_x, H_x, correctedDataAngle, vIndices, hIndices, fileName, ext));
-        % Initialer Plot der Biegelinie
-        updateBendPlot(bendPlot, 1, V_x, H_x, correctedDataAngle, vIndices, hIndices, fileName, ext);
-    end
+        figure;
+        uicontrol('Style', 'text', 'Position', [20, 400, 100, 20], 'String', 'Zeitschritt:');
+        timeStepSlider = uicontrol('Style', 'slider', 'Position', [130, 400, 300, 20], 'Min', 1, 'Max', size(Data, 1), 'Value', 1, 'SliderStep', [1/(size(Data, 1)-1), 10/(size(Data, 1)-1)]);
+        addlistener(timeStepSlider, 'Value', 'PostSet', @(src, event) updateBendPlot(round(timeStepSlider.Value)));
 
-    % Funktion zur Aktualisierung des Biegelinienplots basierend auf dem Zeitschritt
-    function updateBendPlot(bendPlot, timeStep, V_x, H_x, correctedDataAngle, vIndices, hIndices, fileName, ext)
-        axes(bendPlot); % Aktuelle Achse setzen
-        cla; % Achse leeren
-        hold on;
-        plot(V_x, correctedDataAngle(timeStep, vIndices), '-o', 'Color', 'b', 'DisplayName', 'Vorderkante');
-        plot(H_x, correctedDataAngle(timeStep, hIndices), '-s', 'Color', 'r', 'DisplayName', 'Hinterkante');
-        title(['Biegelinie entlang der Spannweite - Datei: ', fileName, ext, ' - Zeitschritt ', num2str(timeStep)]);
-        xlabel('Position entlang der Spannweite (mm)');
-        ylabel('Verformung (mm)');
-        legend;
-        grid on;
-        hold off;
+        % Initialer Plot der Biegelinie
+        updateBendPlot(1);
+
+        % Funktion zur Aktualisierung des Biegelinienplots basierend auf dem Zeitschritt
+        function updateBendPlot(timeStep)
+            clf;
+            hold on;
+            plot(V_x, correctedDataAngle(timeStep, vIndices), '-o', 'Color', 'b', 'DisplayName', ['Vorderkante - ', fileName, ext]);
+            plot(H_x, correctedDataAngle(timeStep, hIndices), '-s', 'Color', 'r', 'DisplayName', ['Hinterkante - ', fileName, ext]);
+            title(['Biegelinie entlang der Spannweite - Datei: ', fileName, ext, ' - Zeitschritt ', num2str(timeStep)]);
+            xlabel('Position entlang der Spannweite (mm)');
+            ylabel('Verformung (mm)');
+            legend;
+            grid on;
+            hold off;
+        end
     end
 
     % Speichern der transformierten Daten
