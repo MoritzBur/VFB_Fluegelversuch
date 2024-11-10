@@ -129,6 +129,9 @@ function transform_data(inputFiles, outputFiles)
         addlistener(timeStepSlider, 'Value', 'PostSet', @(src, event) updateBendPlot(bendPlot, round(timeStepSlider.Value), V_x, H_x, correctedDataAngle, vIndices, hIndices, fileName, ext));
         % Initialer Plot der Biegelinie
         updateBendPlot(bendPlot, 1, V_x, H_x, correctedDataAngle, vIndices, hIndices, fileName, ext);
+
+        % Speichern der transformierten Daten
+        save(outputFile, 'correctedDataAngle', 'Head');
     end
 
     % Funktion zur Aktualisierung des Biegelinienplots basierend auf dem Zeitschritt

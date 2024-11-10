@@ -1,24 +1,18 @@
 % run_analysis.m
-clear; clc;
+function run_analysis()
+    % Skript zum Ausführen des gesamten Analyseprozesses
+    % Definiere Eingabedateien und zugehörige Ausgabedateien
+    inputFiles = {'VFB-W24-D-23%.mat', 'VFB-W24-D-60%.mat'};
+    correctedFiles = {'VFB-W24-D-23%-corrected.mat', 'VFB-W24-D-60%-corrected.mat'};
+    filteredFiles = {'VFB-W24-D-23%-filtered.mat', 'VFB-W24-D-60%-filtered.mat'};
+    regressionFiles = {'VFB-W24-D-23%-regression.mat', 'VFB-W24-D-60%-regression.mat'};
 
-% Definieren der Pfade zu den Rohdaten-Dateien
-inputFiles = {
-    'C:\Users\moritz\Documents\GitHub\VFB_Fluegelversuch\data\VFB-W24-D-23%.mat',
-    'C:\Users\moritz\Documents\GitHub\VFB_Fluegelversuch\data\VFB-W24-D-60%.mat'
-};
+    % Transformiere Rohdaten (Höhen- und Winkelkorrektur)
+    transform_data(inputFiles, correctedFiles);
 
-% Definieren der Pfade für die Ausgabedateien
-outputFiles = {
-    'C:\Users\moritz\Documents\GitHub\VFB_Fluegelversuch\data\deformation_23.mat',
-    'C:\Users\moritz\Documents\GitHub\VFB_Fluegelversuch\data\deformation_60.mat'
-};
+    % Filtere relevante Zeilenbereiche der Messdaten
+    filter_data(correctedFiles, filteredFiles);
 
-% Transformiere die Daten (Rotation und Korrekturen)
-transform_data(inputFiles, outputFiles);
-
-% Weitere Schritte könnten hier eingebunden werden, wie zum Beispiel:
-% - clean_data(outputFiles);
-% - calc_cot(...);
-
-% Hinweis:
-% Jedes Skript sollte modular aufgebaut sein, um eine einfache Anpassung und Erweiterung zu ermöglichen.
+    % Führe lineare Regression durch und berechne Biegelinie
+    fit_biegelinie(filteredFiles);
+end
