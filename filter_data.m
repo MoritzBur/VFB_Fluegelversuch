@@ -9,9 +9,9 @@ function filter_data(inputFiles, outputFiles)
 
     % Definierte Zeilenintervalle (nicht interaktiv)
     intervals = {
-        [757:1425, 1426:2039],  % Intervalle für die erste Datei
-        [540:1030, 1031:1503]   % Intervalle für die zweite Datei
-    };
+        [761:1162, 1422:1818],  % Intervalle für die erste Datei
+        [533:836, 1042:1331]   % Intervalle für die zweite Datei
+    }; %#ok<COMNC>
 
     % Schleife über alle angegebenen Dateien
     for fileIdx = 1:length(inputFiles)
