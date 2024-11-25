@@ -96,7 +96,28 @@ function fit_biegelinie(inputFiles, outputFiles)
         legend;
         grid on;
 
+                % Plot der Ergebnisse für Vorderkante und Hinterkante in einem Plot
+        figure;
+        plot(V_x, vCoeffs, 'o', 'Color', 'b', 'MarkerFaceColor', 'b', 'DisplayName', 'Vorderkante Daten');
+        hold on;
+        fplot(@(x) polyval(polyV, x), [min(V_x), max(V_x)], 'Color', 'b', 'DisplayName', 'Vorderkante Fit');
+        plot(H_x, hCoeffs, 's', 'Color', 'r', 'MarkerFaceColor', 'r', 'DisplayName', 'Hinterkante Daten');
+        fplot(@(x) polyval(polyH, x), [min(H_x), max(H_x)], 'Color', 'r', 'DisplayName', 'Hinterkante Fit');
+        title(['Polynom 3. Grades für Vorder- und Hinterkante - Datei: ', inputFile]);
+        xlabel('Position entlang der Spannweite (Index)');
+        ylabel('Linearkoeffizient');
+        legend;
+        grid on;
+        hold off;
+
         % Speichern der Fit-Daten
         save(outputFile, 'vFits', 'hFits', 'vCoeffs', 'hCoeffs', 'polyV', 'polyH', 'V_x', 'H_x');
     end
 end
+
+
+
+
+
+
+%%%%%%%%%%%%%%%%%%%%%%
