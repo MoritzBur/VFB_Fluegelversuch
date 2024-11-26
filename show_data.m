@@ -2,7 +2,7 @@
 clear; clc;
 
 % Pfad zur .mat Datei
-filePath = 'C:\Users\moritz\Documents\GitHub\VFB_Fluegelversuch\data\VFB-W24-D-60%.mat';
+filePath = '/Users/Leif/Documents/GitHub/VFB_Fluegelversuch/data/VFB-W24-D-60%.mat';
 
 % Laden der Daten aus der .mat Datei
 load(filePath, 'Data', 'Head');
